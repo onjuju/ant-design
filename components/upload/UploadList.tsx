@@ -26,6 +26,7 @@ export default class UploadList extends React.Component<UploadListProps, any> {
     showDownloadIcon: false,
     showPreviewIcon: true,
     previewFile: previewImage,
+    isImageUrl,
   };
 
   componentDidUpdate() {
@@ -81,12 +82,12 @@ export default class UploadList extends React.Component<UploadListProps, any> {
   };
 
   handleIconRender = (file: UploadFile) => {
-    const { listType, locale, iconRender } = this.props;
+    const { listType, locale, iconRender, isImageUrl: isImgUrl } = this.props;
     if (iconRender) {
       return iconRender(file, listType);
     }
     const isLoading = file.status === 'uploading';
-    const fileIcon = isImageUrl(file) ? <PictureTwoTone /> : <FileTwoTone />;
+    const fileIcon = isImgUrl && isImgUrl(file) ? <PictureTwoTone /> : <FileTwoTone />;
     let icon: React.ReactNode = isLoading ? <LoadingOutlined /> : <PaperClipOutlined />;
     if (listType === 'picture') {
       icon = isLoading ? <LoadingOutlined /> : fileIcon;
@@ -128,6 +129,7 @@ export default class UploadList extends React.Component<UploadListProps, any> {
       downloadIcon: customDownloadIcon,
       locale,
       progressAttr,
+      isImageUrl: isImgUrl,
     } = this.props;
     const prefixCls = getPrefixCls('upload', customizePrefixCls);
     const list = items.map(file => {
@@ -141,8 +143,8 @@ export default class UploadList extends React.Component<UploadListProps, any> {
             [`${prefixCls}-list-item-file`]: file.status !== 'uploading',
           });
           icon = <div className={uploadingClassName}>{iconNode}</div>;
-        } else {
-          const thumbnail = isImageUrl(file) ? (
+        } else if (isImgUrl) {
+          const thumbnail = isImgUrl(file) ? (
             <img
               src={file.thumbUrl || file.url}
               alt={file.name}
@@ -153,7 +155,7 @@ export default class UploadList extends React.Component<UploadListProps, any> {
           );
           const aClassName = classNames({
             [`${prefixCls}-list-item-thumbnail`]: true,
-            [`${prefixCls}-list-item-file`]: !isImageUrl(file),
+            [`${prefixCls}-list-item-file`]: !isImgUrl(file),
           });
           icon = (
             <a
